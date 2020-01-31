@@ -1,0 +1,58 @@
+global
+    mode http
+    option forwardfor
+
+# This captures alpn traffic on the https port and forwards the ACME validation requests to acme.sh
+# and normal https requests to the app servers.
+frontend alpn
+    mode tcp
+    bind :{{ (ds "data").https_port }}
+    tcp-request inspect-delay 5s
+    tcp-request content accept if { req_ssl_hello_type 1 }
+    use_backend acme if { req.ssl_alpn acme-tls/1 }
+    default_backend bk_https
+
+# This forwards traffic to acme.sh for certificate verification
+backend acme
+    server acme.sh 127.0.0.1:{{ (ds "data").internal_acme_port }}
+
+# Caputres traffic from the alpn frontend and forwards it to the https frontend
+backend bk_https
+    server https 127.0.0.1:{{ (ds "data").internal_https_port }} send-proxy-v2
+
+# This is a normal HTTP traffic frontend that may redirect to https or just forward on through
+# depending on the app.
+frontend http
+    bind :{{ (ds "data").http_port }}
+
+    {{range (ds "data").virtual_hosts}}
+    acl is_{{ .application_name }} hdr(Host) -m {{ .domain }}
+    {{- if .force_https }}
+    redirect scheme https if is_{{.application_name}}
+    {{- else}}
+    use_backend {{ .application_name }} if is_{{ .application_name }}
+    {{- end}}
+    {{end}}
+
+# This is the HTTPS traffic frontend
+frontend https
+    bind 127.0.0.1:{{ (ds "data").internal_https_port }}  ssl crt /usr/local/haproxy/certs accept-proxy
+
+    {{ range (ds "data").virtual_hosts}}
+    acl is_{{ .application_name }} hdr(Host) -m {{ .domain }}
+    use_backend {{ .application_name }} if is_{{ .application_name}}
+    {{end}}
+
+# Backend defaults
+defaults
+    balance roundrobin
+
+# Application-specific backends
+
+{{ range (ds "data").virtual_hosts }}
+backend {{ .application_name }}
+    # TODO: Make the healthcheck interval configurable
+    {{ range .endpoints -}}
+    server {{ strings.ReplaceAll "/" "_" .unit_name }} {{ .hostname }}:{{ .port }} check inter 10s
+    {{end -}}
+{{end}}
