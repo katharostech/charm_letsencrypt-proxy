@@ -1,3 +1,2 @@
-# The best two lines in any .gitignore file
-*gitignore* # Ignore every file with "gitignore" in its name
-!.gitignore # Don't ignore the .gitignore file
+*gitignore*
+!.gitignore
