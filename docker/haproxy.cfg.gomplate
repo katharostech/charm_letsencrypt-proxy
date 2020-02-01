@@ -1,6 +1,11 @@
 global
-    mode http
-    option forwardfor
+    tune.ssl.default-dh-param 2048
+
+# Default timeouts
+defaults
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
 
 # This captures alpn traffic on the https port and forwards the ACME validation requests to acme.sh
 # and normal https requests to the app servers.
@@ -20,13 +25,25 @@ backend acme
 backend bk_https
     server https 127.0.0.1:{{ (ds "data").internal_https_port }} send-proxy-v2
 
+# Set default HTTP/HTTPS configuration
+defaults
+    mode http
+    option forwardfor
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+
 # This is a normal HTTP traffic frontend that may redirect to https or just forward on through
 # depending on the app.
 frontend http
     bind :{{ (ds "data").http_port }}
 
     {{range (ds "data").virtual_hosts}}
-    acl is_{{ .application_name }} hdr(Host) -m {{ .domain }}
+    acl is_{{ .application_name }} hdr(Host) {{ .domain }}
     {{- if .force_https }}
     redirect scheme https if is_{{.application_name}}
     {{- else}}
@@ -36,16 +53,20 @@ frontend http
 
 # This is the HTTPS traffic frontend
 frontend https
-    bind 127.0.0.1:{{ (ds "data").internal_https_port }}  ssl crt /usr/local/haproxy/certs accept-proxy
+    bind 127.0.0.1:{{ (ds "data").internal_https_port }}  ssl crt /usr/local/etc/haproxy/certs accept-proxy
 
     {{ range (ds "data").virtual_hosts}}
-    acl is_{{ .application_name }} hdr(Host) -m {{ .domain }}
+    acl is_{{ .application_name }} hdr(Host) {{ .domain }}
     use_backend {{ .application_name }} if is_{{ .application_name}}
     {{end}}
 
 # Backend defaults
 defaults
+    mode http
     balance roundrobin
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
 
 # Application-specific backends
 
