@@ -1,9 +1,12 @@
 FROM haproxy:2.1.2-alpine
 
+ENV ACME_CFG_HOME=/cert-config
+
 # Install ACME.sh script for generating certificates
 RUN apk add --no-cache nmap-ncat openssl socat wget && \
     wget -O -  https://get.acme.sh | sh && \
-    ln -s /root/.acme.sh/acme.sh /usr/local/bin/
+    ln -s /root/.acme.sh/acme.sh /usr/local/bin/ && \
+    acme.sh --uninstall-cronjob
 
 # Environment Variables
 ENV \
@@ -23,6 +26,10 @@ COPY ./haproxy.cfg.gomplate /usr/local/etc/haproxy/
 # Copy in a dummy certificate that is a placeholder
 RUN mkdir -p /usr/local/etc/haproxy/certs
 ADD ./certs/* /usr/local/etc/haproxy/certs/
+
+# Haproxy Reload script
+COPY ./reload-haproxy.sh /
+RUN chmod 744 /reload-haproxy.sh
 
 # Start script
 COPY ./start-container.sh /
