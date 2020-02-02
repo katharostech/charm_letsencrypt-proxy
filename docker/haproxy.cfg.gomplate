@@ -1,8 +1,10 @@
 global
     tune.ssl.default-dh-param 2048
+    log 127.0.0.1:{{ (ds "data").haproxy_logging_port }} local0
 
 # Default timeouts
 defaults
+    log global
     timeout connect         10s
     timeout client          1m
     timeout server          1m
@@ -29,6 +31,7 @@ backend bk_https
 defaults
     mode http
     option forwardfor
+    log global
     timeout http-request    10s
     timeout queue           1m
     timeout connect         10s
@@ -64,6 +67,7 @@ frontend https
 defaults
     mode http
     balance roundrobin
+    log global
     timeout connect         10s
     timeout client          1m
     timeout server          1m
