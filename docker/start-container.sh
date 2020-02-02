@@ -35,7 +35,7 @@ if [ "$ACME_CFG_BASE64" != "" ]; then
 fi
 
 # Domains to generate certs for
-domains="$(gomplate -d data.yaml -i '{{range (ds "data").virtual_hosts}} {{.domain}} {{end}}')"
+domains="$(gomplate -d data.yaml -i '{{range (ds "data").virtual_hosts}} {{if .enable_https}} {{.domain}} {{end}} {{end}}')"
 
 # Domain args for acme.sh
 domain_args=""
