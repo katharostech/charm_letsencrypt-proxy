@@ -1,0 +1,29 @@
+# Job to renew the certificates
+use-docker: false
+hooks:
+  install:
+    - inline-host-script: |
+        lucky set-status maintenance "Installing thing 1"
+        sleep 5
+        lucky set-status active
+      async: true
+    - inline-host-script: |
+        lucky set-status maintenance "Installing thing 2"
+        sleep 8
+        lucky set-status active
+    - inline-host-script: |
+        lucky set-status maintenance "Finalizing install"
+        sleep 3
+        lucky set-status active
+  start:
+    - inline-host-script: |
+        lucky set-status maintenance "Starting app"
+        sleep 3
+        lucky set-status active
+      async: true
+    - inline-host-script: |
+        lucky set-status maintenance "Doing something that will break"
+        sleep 1
+        exit 3 
+        lucky set-status active
+
