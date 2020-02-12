@@ -53,7 +53,8 @@ if [ "$IS_LEADER" = "true" ]; then
     fi
 
     # Setup cronjob for renewing certificates
-    acme.sh --install-cronjob --config-home $ACME_CFG_HOME
+    # Cron will actually be handled by the charm instead
+    #acme.sh --install-cronjob --config-home $ACME_CFG_HOME
 
     echo "Issuing cert for $domains"
     mkdir -p $ACME_CFG_HOME
@@ -64,13 +65,15 @@ if [ "$IS_LEADER" = "true" ]; then
     acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy
 
     # Only start cron if we are the leader and are in charge of generating certs
-    echo "Starting Cron To Renew Certs daily"
-    crond
+    # Cron will actually be handled by the charm instead
+    #echo "Starting Cron To Renew Certs daily"
+    #crond
 
 # If we are not the leader, deploy the certs and setup a cronjob just for deploying the certs
 else
-    deploy_cmd="acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy"
-    $deploy_cmd
-    echo $deploy_cmd | crontab -
+    # Cron will actually be handled by the charm instead
+    #deploy_cmd="acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy"
+    #$deploy_cmd
+    #echo $deploy_cmd | crontab -
 fi
 

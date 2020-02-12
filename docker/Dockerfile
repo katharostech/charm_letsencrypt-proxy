@@ -15,7 +15,9 @@ ENV \
     # Container will generate certificates only if it is the leader
     IS_LEADER="false" \
     # Whether or not to generate test certificates instead of real ones
-    TEST="false"
+    TEST="false" \
+    # The ACME.sh config dir tar-gziped and base64 encoded
+    ACME_CFG_BASE64=""
 
 # Install gomplate templating tool
 COPY --from=hairyhenderson/gomplate:v2.5.0-slim /gomplate /usr/local/bin/gomplate
