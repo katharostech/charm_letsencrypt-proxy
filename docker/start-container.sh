@@ -70,10 +70,10 @@ if [ "$IS_LEADER" = "true" ]; then
     #crond
 
 # If we are not the leader, deploy the certs and setup a cronjob just for deploying the certs
-else
-    # Cron will actually be handled by the charm instead
+# Cron will actually be handled by the charm instead
+#else
     #deploy_cmd="acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy"
     #$deploy_cmd
     #echo $deploy_cmd | crontab -
 fi
-
+#
