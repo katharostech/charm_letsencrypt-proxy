@@ -46,7 +46,7 @@ done
 if [ "$IS_LEADER" = "true" ]; then
     internal_acme_port="$(gomplate -d data.yaml -i '{{(ds "data").internal_acme_port}}')"
 
-    # Generate test certs instead of real ones of TEST=true
+    # Generate test certs instead of real ones if TEST=true
     test_arg=""
     if [ "$TEST" = "true" ]; then
         test_arg="--test"
@@ -56,13 +56,15 @@ if [ "$IS_LEADER" = "true" ]; then
     # Cron will actually be handled by the charm instead
     #acme.sh --install-cronjob --config-home $ACME_CFG_HOME
 
-    echo "Issuing cert for $domains"
-    mkdir -p $ACME_CFG_HOME
-    acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args
-    
-    export DEPLOY_HAPROXY_PEM_PATH=/usr/local/etc/haproxy/certs
-    export DEPLOY_HAPROXY_RELOAD='/reload-haproxy.sh'
-    acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy
+    if [ "$domains" != "" ]; then
+        echo "Issuing cert for $domains"
+        mkdir -p $ACME_CFG_HOME
+        acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args
+
+        export DEPLOY_HAPROXY_PEM_PATH=/usr/local/etc/haproxy/certs
+        export DEPLOY_HAPROXY_RELOAD='/reload-haproxy.sh'
+        acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy
+    fi
 
     # Only start cron if we are the leader and are in charge of generating certs
     # Cron will actually be handled by the charm instead
