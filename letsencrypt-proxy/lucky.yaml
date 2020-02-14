@@ -1,29 +1,24 @@
-# Job to renew the certificates
-use-docker: false
+# Juju hooks
 hooks:
-  install:
-    - inline-host-script: |
-        lucky set-status maintenance "Installing thing 1"
-        sleep 5
-        lucky set-status active
-      async: true
-    - inline-host-script: |
-        lucky set-status maintenance "Installing thing 2"
-        sleep 8
-        lucky set-status active
-    - inline-host-script: |
-        lucky set-status maintenance "Finalizing install"
-        sleep 3
-        lucky set-status active
+  # Set the start server flag when the start hook is triggered
   start:
-    - inline-host-script: |
-        lucky set-status maintenance "Starting app"
-        sleep 3
-        lucky set-status active
-      async: true
-    - inline-host-script: |
-        lucky set-status maintenance "Doing something that will break"
-        sleep 1
-        exit 3 
-        lucky set-status active
+    - inline-host-script: lucky kv set start_server true
+    - host-script: update.sh
+
+  # Update when config changed ( also called when starting )
+  config-changed:
+    # update.sh will start the proxy if it is not started
+    - host-script: update.sh
+  
+  # Update when "domain" relation is updated
+  domain-relation-changed:
+    - host-script: update.sh
+  domain-relation-broken:
+    - host-script: update.sh
+  
+  # Update when leader settings change
+  leader-elected:
+    - host-script: update.sh
+  leader-settings-changed:
+    - host-script: update.sh
 

@@ -1,14 +1,15 @@
 options:
-  string-option:
-    type: string
-    default: "Default Value"
-    description: "A short description of the configuration option"
-  boolean-option:
+  test:
     type: boolean
     default: False
-    description: "A short description of the configuration option"
-  int-option:
+    description: >
+      Generate test certificates ( without a request limit ) instead of
+      real trusted certificates.
+  http-port:
     type: int
-    default: 9001
-    description: "A short description of the configuration option"
-
+    default: 80
+    description: The HTTP listening port
+  https-port:
+    type: int
+    default: 443
+    description: The HTTPS listening port
