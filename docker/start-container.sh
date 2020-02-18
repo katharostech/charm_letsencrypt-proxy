@@ -24,7 +24,6 @@ touch /var/log/haproxy.log
 tail -f /var/log/haproxy.log &
 
 # Start HAProxy
-# TODO: Figure out if we should run syslog for obtaining HAProxy logs
 echo "Starting HAProxy"
 haproxy -D -p /run/haproxy.pid -- $config_file
 
@@ -52,30 +51,13 @@ if [ "$IS_LEADER" = "true" ]; then
         test_arg="--test"
     fi
 
-    # Setup cronjob for renewing certificates
-    # Cron will actually be handled by the charm instead
-    #acme.sh --install-cronjob --config-home $ACME_CFG_HOME
-
+    # Issue certificates for our domains
     if [ "$domains" != "" ]; then
         echo "Issuing cert for $domains"
         mkdir -p $ACME_CFG_HOME
         acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args
-
-        export DEPLOY_HAPROXY_PEM_PATH=/usr/local/etc/haproxy/certs
-        export DEPLOY_HAPROXY_RELOAD='/reload-haproxy.sh'
-        acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy
     fi
-
-    # Only start cron if we are the leader and are in charge of generating certs
-    # Cron will actually be handled by the charm instead
-    #echo "Starting Cron To Renew Certs daily"
-    #crond
-
-# If we are not the leader, deploy the certs and setup a cronjob just for deploying the certs
-# Cron will actually be handled by the charm instead
-#else
-    #deploy_cmd="acme.sh --config-home $ACME_CFG_HOME --deploy $domain_args --deploy-hook haproxy"
-    #$deploy_cmd
-    #echo $deploy_cmd | crontab -
 fi
-#
+
+# Deploy certs to haproxy
+/deploy-certs.sh

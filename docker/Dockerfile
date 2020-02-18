@@ -33,6 +33,10 @@ ADD ./certs/* /usr/local/etc/haproxy/certs/
 COPY ./reload-haproxy.sh /
 RUN chmod 744 /reload-haproxy.sh
 
+# Cert deploy script
+COPY ./deploy-certs.sh /
+RUN chmod 744 /deploy-certs.sh
+
 # Start script
 COPY ./start-container.sh /
 RUN chmod 744 /start-container.sh
