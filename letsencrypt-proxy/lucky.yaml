@@ -22,3 +22,8 @@ hooks:
   leader-settings-changed:
     - host-script: update.sh
 
+# Periodic jobs
+cron-jobs:
+  # Periodically update the HTTPS certificates
+  "*/10 * * * * *":
+    - container-script: update-certificates.sh

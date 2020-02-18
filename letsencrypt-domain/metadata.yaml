@@ -1,0 +1,20 @@
+name: letsencrypt-domain
+display-name: Let's Encrypt Domain
+summary: A domain for the Let's Encrypt Proxy charm.
+maintainer: Zicklag <zicklag@katharostech.com>
+description: |
+  A domain for the Let's Encrypt Proxy charm.
+tags:
+  - misc
+subordinate: true
+
+provides:
+  # Provides the Let's Encrypt domain information for the letsencrypt-proxy charm
+  domain:
+    interface: letsencrypt-domain
+
+requires:
+  # Requres HTTP backend to direct traffic to on the configured domain
+  website:
+    interface: http
+    scope: container

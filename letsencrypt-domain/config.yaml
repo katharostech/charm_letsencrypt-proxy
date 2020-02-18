@@ -1,0 +1,14 @@
+options:
+  domain:
+    type: string
+    default: example.org
+    description: The domain to register the site under
+  enable-https:
+    type: boolean
+    default: true
+    description: Enable automatic HTTPS certificate genration and routing
+  force-https:
+    type: boolean
+    default: false
+    description: Redirect HTTP requests on this domain to HTTPS
+
