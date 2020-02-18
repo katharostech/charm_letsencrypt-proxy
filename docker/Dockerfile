@@ -49,4 +49,7 @@ RUN chmod 744 /stop-container.sh
 COPY ./docker-cmd.sh /
 RUN chmod 744 /docker-cmd.sh
 
+# Re-set the stop signal to sigterm because the haproxy base image set it to SIGUSR1
+STOPSIGNAL SIGTERM
+
 CMD /docker-cmd.sh
