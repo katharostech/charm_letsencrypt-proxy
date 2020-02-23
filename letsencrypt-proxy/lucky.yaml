@@ -15,6 +15,9 @@ hooks:
       ignore-missing-container: true
   
   # Update when "domain" relation is updated
+  domain-relation-joined:
+    - host-script: update.sh
+    - container-script: update-certificates.sh
   domain-relation-changed:
     - host-script: update.sh
     - container-script: update-certificates.sh
