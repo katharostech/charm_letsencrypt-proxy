@@ -39,16 +39,19 @@ done
 # Set domain relation data
 #
 
-# For each related letsencrypt-proxy charm
-for relation_id in $(lucky relation list-ids --relation-name domain); do
+# If this is not a relation broken hook
+if [ "$1" != "broken" ]; then
+    # For each related letsencrypt-proxy charm
+    for relation_id in $(lucky relation list-ids --relation-name domain); do
 
-    # Set domain relation data
-    lucky relation set -r $relation_id \
-        "endpoints=$endpoints" \
-        "domain=$(lucky get-config domain)" \
-        "enable-https=$(lucky get-config enable-https)" \
-        "force-https=$(lucky get-config force-https)" \
-        "application-name=$application_name"
-done
+        # Set domain relation data
+        lucky relation set -r $relation_id \
+            "endpoints=$endpoints" \
+            "domain=$(lucky get-config domain)" \
+            "enable-https=$(lucky get-config enable-https)" \
+            "force-https=$(lucky get-config force-https)" \
+            "application-name=$application_name"
+    done
+fi
 
 lucky set-status active

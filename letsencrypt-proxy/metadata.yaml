@@ -2,6 +2,8 @@ name: letsencrypt-proxy
 display-name: Let's Encrypt Proxy
 summary: An HAProxy charm for automatically generating SSL certificates.
 maintainer: Zicklag <zicklag@katharostech.com>
+series:
+  - bionic
 
 description: |
   An HAProxy charm for automatically generating SSL certificates.

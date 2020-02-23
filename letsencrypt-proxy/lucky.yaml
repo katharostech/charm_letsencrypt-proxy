@@ -2,28 +2,43 @@
 hooks:
   # Set the start server flag when the start hook is triggered
   start:
-    - inline-host-script: lucky kv set start_server true
+    - inline-host-script: lucky kv set start_server=true
     - host-script: update.sh
+    - container-script: update-certificates.sh
 
   # Update when config changed ( also called when starting )
   config-changed:
     # update.sh will start the proxy if it is not started
     - host-script: update.sh
+    - container-script: update-certificates.sh
+      # This hook may run before the container has been started
+      ignore-missing-container: true
   
   # Update when "domain" relation is updated
   domain-relation-changed:
     - host-script: update.sh
+    - container-script: update-certificates.sh
   domain-relation-broken:
     - host-script: update.sh
+    - container-script: update-certificates.sh
   
   # Update when leader settings change
   leader-elected:
     - host-script: update.sh
+    - container-script: update-certificates.sh
+      # This hook may run before the container has been started
+      ignore-missing-container: true
   leader-settings-changed:
     - host-script: update.sh
+    - container-script: update-certificates.sh
+      # This hook may run before the container has been started
+      ignore-missing-container: true
 
 # Periodic jobs
 cron-jobs:
   # Periodically update the HTTPS certificates
-  "*/10 * * * * *":
+  "1/20 * * * * *":
     - container-script: update-certificates.sh
+      # Because it is a cron job, this could run anytime and the container may not exist
+      # at that time.
+      ignore-missing-container: true

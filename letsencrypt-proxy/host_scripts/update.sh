@@ -14,13 +14,13 @@ lucky container image set katharostech/charm_letsencrypt-proxy:latest
 lucky container set-network host
 
 # Set test mode based on charm config
-lucky container env set TEST "$(lucky get-config test)"
+lucky container env set "TEST=$(lucky get-config test)"
 
 # Set leader config
-lucky container env set IS_LEADER "$(lucky leader is-leader)"
+lucky container env set "IS_LEADER=$(lucky leader is-leader)"
 
 # Set the acme cfg base64 encoded tar to restore the acme.sh config
-lucky container env set ACME_CFG_BASE64 "$(lucky leader get acme_cfg_base64)"
+lucky container env set "ACME_CFG_BASE64=$(lucky leader get acme_cfg_base64)"
 
 # Create the haproxy config template data YAML
 tpl_data=""
@@ -28,15 +28,15 @@ tpl_data=""
 # Configure proxy ports ( get port setting from kv store or generate random available port )
 internal_acme_port=$(lucky kv get internal_acme_port)
 internal_acme_port=${internal_acme_port:-$(lucky random --available-port)}
-lucky kv set internal_acme_port "$internal_acme_port"
+lucky kv set "internal_acme_port=$internal_acme_port"
 
 internal_https_port=$(lucky kv get internal_https_port)
 internal_https_port=${internal_https_port:-$(lucky random --available-port)}
-lucky kv set internal_https_port "$internal_https_port"
+lucky kv set "internal_https_port=$internal_https_port"
 
 haproxy_logging_port=$(lucky kv get haproxy_logging_port)
 haproxy_logging_port=${haproxy_logging_port:-$(lucky random --available-port)}
-lucky kv set haproxy_logging_port "$haproxy_logging_port"
+lucky kv set "haproxy_logging_port=$haproxy_logging_port"
 
 http_port=$(lucky get-config http-port)
 https_port=$(lucky get-config https-port)
@@ -65,19 +65,26 @@ virtual_hosts:"
 # For each related domain charm
 for relation_id in $(lucky relation list-ids --relation-name domain); do
     # For every unit of the related charm
+    first_unit="true"
     for related_unit in $(lucky relation list-units -r $relation_id); do
         # Alias for brevity
         r=$relation_id
         u=$related_unit
 
-        # Add virtual host config
-        tpl_data="$tpl_data
+	# For the first related domain charm we add the domain and the domain settings.
+	# The rest of the related domain units will have the same values as the first one so we
+	# don't need to add these settings except on the first loop.
+        if [ "$first_unit" = "true" ]; then
+            # Add virtual host config
+            tpl_data="$tpl_data
   - domain: $(lucky relation get -r $r -u $u domain)
     force_https: $(lucky relation get -r $r -u $u force-https)
     enable_https: $(lucky relation get -r $r -u $u enable-https)
     application_name: $(lucky relation get -r $r -u $u application-name)
     endpoints:
 "
+            first_unit="false"
+        fi
 
         # Add domain endpoints
         # Each endpoint is in the format: `unit_name:hostname:port`
@@ -90,12 +97,8 @@ for relation_id in $(lucky relation list-ids --relation-name domain); do
       - unit_name: $unit_name
         hostname: $hostname
         port: $port"
-        
+
         done
-        
-        # Break out of loop: we only care about the first unit ( because there should 
-        # only be one )
-        break
     done
 done
 
@@ -105,6 +108,6 @@ if [ "$LUCKY_LOG_LEVEL" = "trace" ]; then
 fi
 
 # Set container config template data
-lucky container env set HAPROXY_CFG_TPL_DATA "$tpl_data"
+lucky container env set "HAPROXY_CFG_TPL_DATA=$tpl_data"
 
 lucky set-status active
