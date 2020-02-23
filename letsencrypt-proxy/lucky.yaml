@@ -36,8 +36,8 @@ hooks:
 
 # Periodic jobs
 cron-jobs:
-  # Periodically update the HTTPS certificates
-  "1/20 * * * * *":
+  # Update the HTTPS certificates daily
+  "0 0 * * * *":
     - container-script: update-certificates.sh
       # Because it is a cron job, this could run anytime and the container may not exist
       # at that time.
