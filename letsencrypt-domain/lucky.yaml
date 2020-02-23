@@ -14,8 +14,8 @@ hooks:
     - host-script: update.sh
 
   # Update when "website" relation is updated
-  domain-relation-changed:
+  website-relation-changed:
     - host-script: update.sh
-  domain-relation-broken:
+  website-relation-broken:
     - host-script: update.sh
 

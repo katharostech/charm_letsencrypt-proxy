@@ -27,6 +27,10 @@ hooks:
     - host-script: update.sh
     - container-script: update-certificates.sh
       ignore-missing-container: true
+  domain-relation-departed:
+    - host-script: update.sh
+    - container-script: update-certificates.sh
+      ignore-missing-container: true
   
   # Update when leader settings change
   leader-elected:
@@ -43,7 +47,7 @@ hooks:
 # Periodic jobs
 cron-jobs:
   # Update the HTTPS certificates daily
-  "0 0 * * * *":
+  "0 0 0 * * *":
     - container-script: update-certificates.sh
       # Because it is a cron job, this could run anytime and the container may not exist
       # at that time.
