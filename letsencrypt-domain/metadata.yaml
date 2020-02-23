@@ -7,6 +7,8 @@ description: |
 tags:
   - misc
 subordinate: true
+series:
+  - bionic
 
 provides:
   # Provides the Let's Encrypt domain information for the letsencrypt-proxy charm
