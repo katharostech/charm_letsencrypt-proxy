@@ -18,12 +18,15 @@ hooks:
   domain-relation-joined:
     - host-script: update.sh
     - container-script: update-certificates.sh
+      ignore-missing-container: true
   domain-relation-changed:
     - host-script: update.sh
     - container-script: update-certificates.sh
+      ignore-missing-container: true
   domain-relation-broken:
     - host-script: update.sh
     - container-script: update-certificates.sh
+      ignore-missing-container: true
   
   # Update when leader settings change
   leader-elected:
