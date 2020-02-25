@@ -19,9 +19,10 @@ logging_port="$(gomplate -d data.yaml -i '{{(ds "data").haproxy_logging_port}}')
 ncat -ul 127.0.0.1 $logging_port -c 'cat >> /var/log/haproxy.log' &
 echo $! > /run/haproxy_logger.pid
 
-# Tail haproxy logs to stdout
+# Tail haproxy  and acmesh logs to stdout
 touch /var/log/haproxy.log
-tail -f /var/log/haproxy.log &
+touch /var/log/acmesh.log
+tail -f /var/log/haproxy.log /var/log/acmesh.log &
 
 # Start HAProxy
 echo "Starting HAProxy"
@@ -53,9 +54,19 @@ if [ "$IS_LEADER" = "true" ]; then
 
     # Issue certificates for our domains
     if [ "$domains" != "" ]; then
-        echo "Issuing cert for $domains"
         mkdir -p $ACME_CFG_HOME
-        acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args
+        echo "Issuing cert for $domains"
+        while ! acme.sh \
+                --config-home $ACME_CFG_HOME \
+                --issue \
+                $test_arg \
+                --alpn \
+                --tlsport $internal_acme_port \
+                $domain_args > /var/log/acmesh.log 2>&1; do
+            echo "ERROR: Issuing cert for $domains failed. Trying again in 120 seconds."
+            sleep 120
+            echo "Issuing cert for $domains"
+        done
     fi
 fi
 

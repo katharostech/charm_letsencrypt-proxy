@@ -7,7 +7,7 @@ if [ "$(lucky leader is-leader)" = "true" ]; then
     lucky set-status maintenance "Updating certificates"
 
     # Renew certificates if necessary
-    acme.sh --cron --config-home $ACME_CFG_HOME
+    acme.sh --cron --config-home $ACME_CFG_HOME > /var/log/acmesh.log 2>&1
 
     # Get the previous acme config dir data
     previous_acme_cfg_base64=$(lucky leader get acme_cfg_base64 | tr -d '\n')
