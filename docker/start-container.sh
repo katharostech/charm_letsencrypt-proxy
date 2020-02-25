@@ -56,16 +56,13 @@ if [ "$IS_LEADER" = "true" ]; then
     if [ "$domains" != "" ]; then
         mkdir -p $ACME_CFG_HOME
         echo "Issuing cert for $domains"
-        while ! acme.sh \
-                --config-home $ACME_CFG_HOME \
-                --issue \
-                $test_arg \
-                --alpn \
-                --tlsport $internal_acme_port \
-                $domain_args > /var/log/acmesh.log 2>&1; do
+        acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args > /var/log/acmesh.log 2>&1
+        acme_exit="$?"
+        while [ "$acme_exit" = "1" ]; do
             echo "ERROR: Issuing cert for $domains failed. Trying again in 120 seconds."
             sleep 120
             echo "Issuing cert for $domains"
+            acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args > /var/log/acmesh.log 2>&1
         done
     fi
 fi
