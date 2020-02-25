@@ -2,6 +2,9 @@
 
 set -x
 
+# If we are the leader, ignore leader-settings-changed hooks
+if [ "$(lucky leader is-leader)" = "true" -a "$LUCKY_HOOK" = "leader-settings-changed" ]; then exit 0; fi
+
 # If we are the charm leader
 if [ "$(lucky leader is-leader)" = "true" ]; then
     lucky set-status maintenance "Updating certificates"

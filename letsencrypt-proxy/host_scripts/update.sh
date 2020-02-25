@@ -5,6 +5,9 @@ set -ex
 # If we are not ready to start yet, exit early
 if [ "$(lucky kv get start_server)" != "true" ]; then exit 0; fi
 
+# If we are the leader, ignore leader-settings-changed hooks
+if [ "$(lucky leader is-leader)" = "true" -a "$LUCKY_HOOK" = "leader-settings-changed" ]; then exit 0; fi
+
 lucky set-status maintenance "Configuring Proxy"
 
 # Set container image
@@ -14,13 +17,25 @@ lucky container image set katharostech/charm_letsencrypt-proxy:latest
 lucky container set-network host
 
 # Set test mode based on charm config
-lucky container env set "TEST=$(lucky get-config test)"
+previous_test_mode="$(lucky kv get test_mode)"
+current_test_mode="$(lucky get-config test)"
+lucky container env set "TEST=$current_test_mode"
+lucky kv set "test_mode=$current_test_mode"
+
+# Set the acme cfg base64 encoded tar to restore the acme.sh config
+# If the previous value of TEST was different we need to clean out the acme config to force the
+# certs to regenerate.
+if [ "$previous_test_mode" != "$current_test_mode" ]; then
+    # Clear the acme config
+    lucky leader set "acme_cfg_base64="
+    lucky container env set "ACME_CFG_BASE64="
+else
+    # Set the acme config
+    lucky container env set "ACME_CFG_BASE64=$(lucky leader get acme_cfg_base64)"
+fi
 
 # Set leader config
 lucky container env set "IS_LEADER=$(lucky leader is-leader)"
-
-# Set the acme cfg base64 encoded tar to restore the acme.sh config
-lucky container env set "ACME_CFG_BASE64=$(lucky leader get acme_cfg_base64)"
 
 # Create the haproxy config template data YAML
 tpl_data=""
