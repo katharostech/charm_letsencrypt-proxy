@@ -10,8 +10,21 @@ if [ "$(lucky leader is-leader)" = "true" -a "$LUCKY_HOOK" = "leader-settings-ch
 
 lucky set-status maintenance "Configuring Proxy"
 
+# If we are the leader
+if [ "$(lucky leader is-leader)" = "true" ]; then
+    # Set the leader ip for our slaves
+    lucky leader set "leader_ip=$(lucky private-address)"
+    # And set the local leader_ip to "null" for use in the haproxy config template
+    leader_ip="null"
+# If we are not the leader
+else 
+    # Set the leader IP from the leader config
+    leader_ip="$(lucky leader get leader_ip)"
+fi
+
 # Set container image
-lucky container image set katharostech/charm_letsencrypt-proxy:latest
+lucky container image set \
+    katharostech/charm_letsencrypt-proxy@sha256:7b629773bd1499901426a286c2777fc4e252c8c286edb92906850745a1844417
 
 # Set host networking mode
 lucky container set-network host
@@ -68,7 +81,8 @@ http_port: $http_port
 https_port: $https_port
 internal_acme_port: $internal_acme_port
 internal_https_port: $internal_https_port
-haproxy_logging_port: $haproxy_logging_port"
+haproxy_logging_port: $haproxy_logging_port
+leader_ip: $leader_ip"
 
 #
 # Configure virtual hosts
