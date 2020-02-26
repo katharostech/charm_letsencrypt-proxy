@@ -14,7 +14,7 @@ tags:
 
 subordinate: false
 
-requires:
+provides:
   # This is the relation the domin info subordinate charms relate to this proxy
   # with.
   domain:
