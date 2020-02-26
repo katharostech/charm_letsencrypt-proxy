@@ -24,7 +24,7 @@ fi
 
 # Set container image
 lucky container image set \
-    katharostech/charm_letsencrypt-proxy@sha256:7b629773bd1499901426a286c2777fc4e252c8c286edb92906850745a1844417
+    katharostech/charm_letsencrypt-proxy@sha256:f74f5a6eba58fc6d3f24bd1eaeed5c23f85e632678069d0bf889a02340dee076
 
 # Set host networking mode
 lucky container set-network host

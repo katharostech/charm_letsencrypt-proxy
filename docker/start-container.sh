@@ -43,6 +43,9 @@ for domain in $domains; do
     domain_args="$domain_args -d $domain"
 done
 
+# Deploy any certs to haproxy
+/deploy-certs.sh
+
 if [ "$IS_LEADER" = "true" ]; then
     internal_acme_port="$(gomplate -d data.yaml -i '{{(ds "data").internal_acme_port}}')"
 
@@ -56,16 +59,20 @@ if [ "$IS_LEADER" = "true" ]; then
     if [ "$domains" != "" ]; then
         mkdir -p $ACME_CFG_HOME
         echo "Issuing cert for $domains"
-        acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args > /var/log/acmesh.log 2>&1
+        acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args >> /var/log/acmesh.log 2>&1
         acme_exit="$?"
         while [ "$acme_exit" = "1" ]; do
             echo "ERROR: Issuing cert for $domains failed. Trying again in 120 seconds."
             sleep 120
             echo "Issuing cert for $domains"
-            acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args > /var/log/acmesh.log 2>&1
+            acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args >> /var/log/acmesh.log 2>&1
+            acme_exit="$?"
         done
+
+        # If new certs have been issued
+        if [ "$acme_exit" = "0" ]; then
+            # Update Certs after issuing
+            /deploy-certs.sh
+        fi
     fi
 fi
-
-# Deploy certs to haproxy
-/deploy-certs.sh
