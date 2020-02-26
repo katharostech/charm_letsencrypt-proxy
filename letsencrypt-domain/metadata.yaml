@@ -14,9 +14,9 @@ provides:
   # Provides the Let's Encrypt domain information for the letsencrypt-proxy charm
   domain:
     interface: letsencrypt-domain
+    scope: container
 
 requires:
   # Requres HTTP backend to direct traffic to on the configured domain
   website:
     interface: http
-    scope: container
