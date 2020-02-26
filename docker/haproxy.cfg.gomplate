@@ -21,7 +21,11 @@ frontend alpn
 
 # This forwards traffic to acme.sh for certificate verification
 backend acme
+    {{ if (ds "data").master_ip }}
+    server acme.sh {{ (ds "data").master_ip }}:{{ (ds "data").https_port }}
+    {{else}}
     server acme.sh 127.0.0.1:{{ (ds "data").internal_acme_port }}
+    {{end}}
 
 # Caputres traffic from the alpn frontend and forwards it to the https frontend
 backend bk_https
@@ -47,11 +51,11 @@ frontend http
 
     {{range (ds "data").virtual_hosts}}
     acl is_{{ .application_name }} hdr(Host) {{ .domain }}
-    {{- if .force_https }}
+    {{ if .force_https }}
     redirect scheme https if is_{{.application_name}}
-    {{- else}}
+    {{else}}
     use_backend {{ .application_name }} if is_{{ .application_name }}
-    {{- end}}
+    {{end}}
     {{end}}
 
 # This is the HTTPS traffic frontend
@@ -59,10 +63,10 @@ frontend https
     bind 127.0.0.1:{{ (ds "data").internal_https_port }}  ssl crt /usr/local/etc/haproxy/certs accept-proxy
 
     {{ range (ds "data").virtual_hosts}}
-    {{- if .enable_https -}}
+    {{ if .enable_https }}
     acl is_{{ .application_name }} hdr(Host) {{ .domain }}
     use_backend {{ .application_name }} if is_{{ .application_name}}
-    {{- end -}}
+    {{end}}
     {{end}}
 
 # Backend defaults
@@ -79,7 +83,7 @@ defaults
 {{ range (ds "data").virtual_hosts }}
 backend {{ .application_name }}
     # TODO: Make the healthcheck interval configurable
-    {{ range .endpoints -}}
+    {{ range .endpoints }}
     server {{ strings.ReplaceAll "/" "_" .unit_name }} {{ .hostname }}:{{ .port }} check inter 10s
-    {{end -}}
+    {{end}}
 {{end}}
