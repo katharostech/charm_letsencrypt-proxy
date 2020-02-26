@@ -50,11 +50,13 @@ frontend http
     bind :{{ (ds "data").http_port }}
 
     {{range (ds "data").virtual_hosts}}
+    {{if .application_name}}
     acl is_{{ .application_name }} hdr(Host) {{ .domain }}
     {{ if .force_https }}
     redirect scheme https if is_{{.application_name}}
     {{else}}
     use_backend {{ .application_name }} if is_{{ .application_name }}
+    {{{end}}}
     {{end}}
     {{end}}
 
@@ -63,9 +65,11 @@ frontend https
     bind 127.0.0.1:{{ (ds "data").internal_https_port }}  ssl crt /usr/local/etc/haproxy/certs accept-proxy
 
     {{ range (ds "data").virtual_hosts}}
+    {{ if .application_name }}
     {{ if .enable_https }}
     acl is_{{ .application_name }} hdr(Host) {{ .domain }}
     use_backend {{ .application_name }} if is_{{ .application_name}}
+    {{end}}
     {{end}}
     {{end}}
 
@@ -81,9 +85,12 @@ defaults
 # Application-specific backends
 
 {{ range (ds "data").virtual_hosts }}
+{{ if .application_name }}
 backend {{ .application_name }}
     # TODO: Make the healthcheck interval configurable
     {{ range .endpoints }}
     server {{ strings.ReplaceAll "/" "_" .unit_name }} {{ .hostname }}:{{ .port }} check inter 10s
     {{end}}
 {{end}}
+{{end}}
+
