@@ -21,8 +21,8 @@ frontend alpn
 
 # This forwards traffic to acme.sh for certificate verification
 backend acme
-    {{ if (ds "data").master_ip }}
-    server acme.sh {{ (ds "data").master_ip }}:{{ (ds "data").https_port }}
+    {{ if (ds "data").leader_ip }}
+    server acme.sh {{ (ds "data").leader_ip }}:{{ (ds "data").https_port }}
     {{else}}
     server acme.sh 127.0.0.1:{{ (ds "data").internal_acme_port }}
     {{end}}
