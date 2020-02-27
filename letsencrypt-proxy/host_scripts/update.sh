@@ -100,16 +100,22 @@ for relation_id in $(lucky relation list-ids --relation-name domain); do
         r=$relation_id
         u=$related_unit
 
+        domain="$(lucky relation get -r $r -u $u domain)"
+        application_name="$(lucky relation get -r $r -u $u application-name)"
+
+        # Skip this domain if it is not set yet.
+        if [ "$domain" = "" -o "$application_name" = "" ]; then continue; fi
+
 	# For the first related domain charm we add the domain and the domain settings.
 	# The rest of the related domain units will have the same values as the first one so we
 	# don't need to add these settings except on the first loop.
         if [ "$first_unit" = "true" ]; then
             # Add virtual host config
             tpl_data="$tpl_data
-  - domain: $(lucky relation get -r $r -u $u domain)
+  - domain: $domain
     force_https: $(lucky relation get -r $r -u $u force-https)
     enable_https: $(lucky relation get -r $r -u $u enable-https)
-    application_name: $(lucky relation get -r $r -u $u application-name)
+    application_name: $application_name
     endpoints:
 "
             first_unit="false"
