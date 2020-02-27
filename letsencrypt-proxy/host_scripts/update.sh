@@ -104,7 +104,7 @@ for relation_id in $(lucky relation list-ids --relation-name domain); do
         application_name="$(lucky relation get -r $r -u $u application-name)"
 
         # Skip this domain if it is not set yet.
-        if [ "$domain" = "" -o "$application_name" = "" ]; then continue; fi
+        if [ "$domain" = "" ]; then continue; fi
 
 	# For the first related domain charm we add the domain and the domain settings.
 	# The rest of the related domain units will have the same values as the first one so we
