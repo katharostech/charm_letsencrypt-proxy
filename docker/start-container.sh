@@ -65,7 +65,11 @@ if [ "$IS_LEADER" = "true" ]; then
             echo "ERROR: Issuing cert for $domains failed. Trying again in 120 seconds."
             sleep 120
             echo "Issuing cert for $domains"
-            acme.sh --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args >> /var/log/acmesh.log 2>&1
+            # We force renewal if the first attempt failed because if there was a new cert and
+            # issuing that new cert failed, acme.sh will not realie that that one still needs to
+            # be updated and it will look at the first cert, see that that one *is* valid and skip
+            # challenging the new domain, even though it needs to be verified.
+            acme.sh --force --config-home $ACME_CFG_HOME --issue $test_arg --alpn --tlsport $internal_acme_port $domain_args >> /var/log/acmesh.log 2>&1
             acme_exit="$?"
         done
 
