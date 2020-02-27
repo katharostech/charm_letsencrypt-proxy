@@ -75,4 +75,8 @@ if [ "$IS_LEADER" = "true" ]; then
             /deploy-certs.sh
         fi
     fi
+
+    # Replicate the certificates to non-leader proxy units if necessary
+    /lucky/container_scripts/update-certificates.sh
 fi
+

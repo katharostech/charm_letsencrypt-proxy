@@ -24,7 +24,7 @@ fi
 
 # Set container image
 lucky container image set \
-    katharostech/charm_letsencrypt-proxy@sha256:04f3ad6beb5e868699fd19bf7f4a7918244fad81d836141553f4dd4d51756a97
+    katharostech/charm_letsencrypt-proxy@sha256:62a2d5551cae8ea2515cad1af0f1932b4749d3c1b4808d26ee36b625d3e761cb
 
 # Set host networking mode
 lucky container set-network host
@@ -38,7 +38,7 @@ lucky kv set "test_mode=$current_test_mode"
 # Set the acme cfg base64 encoded tar to restore the acme.sh config
 # If the previous value of TEST was different we need to clean out the acme config to force the
 # certs to regenerate.
-if [ "$previous_test_mode" != "$current_test_mode" ]; then
+if [ "$previous_test_mode" != "$current_test_mode" -a "$(lucky leader is-leader)" = "true" ]; then
     # Clear the acme config
     lucky leader set "acme_cfg_base64="
     lucky container env set "ACME_CFG_BASE64="
