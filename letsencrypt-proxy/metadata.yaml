@@ -4,6 +4,7 @@ summary: An HAProxy charm for automatically generating SSL certificates.
 maintainer: Zicklag <zicklag@katharostech.com>
 series:
   - bionic
+  - focal
 
 description: |
   An HAProxy charm for automatically generating SSL certificates.

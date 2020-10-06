@@ -9,6 +9,7 @@ tags:
 subordinate: true
 series:
   - bionic
+  - focal
 
 requires:
   # Provides the Let's Encrypt domain information for the letsencrypt-proxy charm
